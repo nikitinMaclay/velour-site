@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOUR — Luxury Skincare & Cosmetics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--cream:#F7F3EE;--warm-white:#FDFBF8;--blush:#D4A59A;--blush-light:#E8CEC8;--rose:#C08B7F;--deep:#3A2E2A;--deep-soft:#5C4A44;--taupe:#A89890;--gold:#C9A96E;--gold-light:#E0CFA3;--sage:#A3B5A0;--red:#C0564F;--font-display:'Cormorant Garamond',serif;--font-body:'Karla',sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--warm-white);color:var(--deep);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+.loader{position:fixed;inset:0;z-index:9999;background:var(--cream);display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+.loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loader-text{font-family:var(--font-display);font-size:clamp(2.5rem,6vw,5rem);font-weight:300;letter-spacing:.35em;color:var(--deep)}
+.loader-text span{display:inline-block;animation:slideUp .6s ease forwards;opacity:0;transform:translateY(100%)}
+@keyframes slideUp{to{opacity:1;transform:translateY(0)}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.5rem 3rem;display:flex;align-items:center;justify-content:space-between;background:transparent;transition:background .5s,box-shadow .5s,padding .4s}
+nav.scrolled{background:rgba(253,251,248,.92);backdrop-filter:blur(20px);box-shadow:0 1px 30px rgba(58,46,42,.06);padding:1rem 3rem}
+.nav-logo{font-family:var(--font-display);font-size:1.8rem;font-weight:300;letter-spacing:.3em;color:var(--deep);text-decoration:none}
+.nav-center{display:flex;gap:2.5rem;list-style:none}
+.nav-center a{text-decoration:none;font-size:.8rem;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--deep-soft);position:relative;transition:color .3s}
+.nav-center a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--blush);transition:width .4s}
+.nav-center a:hover{color:var(--deep)}.nav-center a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:1.2rem}
+.cart-toggle{background:none;border:none;cursor:pointer;position:relative;padding:6px}
+.cart-toggle svg{width:22px;height:22px;stroke:var(--deep);fill:none;stroke-width:1.5}
+.cart-badge{position:absolute;top:-2px;right:-4px;background:var(--rose);color:#fff;font-size:.6rem;font-weight:500;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.cart-badge.show{opacity:1;transform:scale(1)}
+.hamburger{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px}
+.hamburger span{display:block;width:24px;height:1.5px;background:var(--deep);transition:all .3s}
+
+.cart-overlay{position:fixed;inset:0;background:rgba(58,46,42,.3);z-index:200;opacity:0;visibility:hidden;transition:all .4s}
+.cart-overlay.open{opacity:1;visibility:visible}
+.cart-drawer{position:fixed;top:0;right:0;bottom:0;width:460px;max-width:92vw;z-index:201;background:var(--warm-white);transform:translateX(100%);transition:transform .5s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;box-shadow:-10px 0 60px rgba(0,0,0,.08)}
+.cart-drawer.open{transform:translateX(0)}
+.cart-drawer-header{display:flex;justify-content:space-between;align-items:center;padding:1.8rem 2rem;border-bottom:1px solid rgba(58,46,42,.08)}
+.cart-drawer-title{font-family:var(--font-display);font-size:1.5rem;font-weight:400}
+.cart-close{background:none;border:none;cursor:pointer;font-size:1.4rem;color:var(--deep-soft);padding:4px;transition:color .3s}
+.cart-close:hover{color:var(--deep)}
+.cart-items{flex:1;overflow-y:auto;padding:1.5rem 2rem}
+.cart-empty{text-align:center;padding:4rem 1rem;color:var(--taupe)}
+.cart-empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.4}
+.cart-empty p{font-size:.95rem;line-height:1.6}
+.cart-item{display:grid;grid-template-columns:80px 1fr;gap:1.2rem;padding:1.2rem 0;border-bottom:1px solid rgba(58,46,42,.06);animation:cartIn .3s ease}
+@keyframes cartIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.cart-item-img{width:80px;height:100px;object-fit:cover;background:var(--cream)}
+.cart-item-info{display:flex;flex-direction:column;justify-content:space-between}
+.cart-item-name{font-family:var(--font-display);font-size:1.1rem;font-weight:400}
+.cart-item-cat{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-top:.15rem}
+.cart-item-bottom{display:flex;justify-content:space-between;align-items:center}
+.qty-controls{display:flex;align-items:center;border:1px solid rgba(58,46,42,.12)}
+.qty-btn{background:none;border:none;cursor:pointer;width:32px;height:32px;font-size:1rem;color:var(--deep-soft);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.qty-btn:hover{background:var(--cream)}
+.qty-val{width:32px;text-align:center;font-size:.85rem;font-weight:500}
+.cart-item-price{font-size:.95rem;font-weight:500;color:var(--rose)}
+.cart-item-remove{background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--taupe);text-decoration:underline;margin-top:.3rem;align-self:flex-start;transition:color .3s}
+.cart-item-remove:hover{color:var(--red)}
+.cart-footer{border-top:1px solid rgba(58,46,42,.1);padding:1.5rem 2rem 2rem}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.cart-total-label{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe)}
+.cart-total-value{font-family:var(--font-display);font-size:1.6rem;font-weight:400;color:var(--deep)}
+.btn-checkout{width:100%;padding:1.1rem;background:var(--deep);color:var(--cream);border:none;font-family:var(--font-body);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:background .4s}
+.btn-checkout:hover{background:var(--deep-soft)}
+.btn-checkout:disabled{opacity:.5;cursor:not-allowed}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(58,46,42,.4);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .4s;padding:1rem}
+.modal-overlay.open{opacity:1;visibility:visible}
+.modal{background:var(--warm-white);width:520px;max-width:100%;max-height:90vh;overflow-y:auto;padding:3rem;transform:translateY(30px) scale(.97);transition:transform .4s;box-shadow:0 30px 80px rgba(0,0,0,.12)}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-title{font-family:var(--font-display);font-size:1.8rem;font-weight:300;margin-bottom:.5rem}
+.modal-subtitle{font-size:.85rem;color:var(--taupe);margin-bottom:2rem;line-height:1.5}
+.modal .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.modal .form-group{margin-bottom:1rem}
+.modal .form-group label{display:block;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe);margin-bottom:.6rem}
+.modal .form-group input,.modal .form-group textarea{width:100%;padding:.9rem 1rem;border:1px solid rgba(58,46,42,.12);background:var(--cream);font-family:var(--font-body);font-size:.9rem;color:var(--deep);outline:none;transition:border-color .3s}
+.modal .form-group input:focus,.modal .form-group textarea:focus{border-color:var(--blush)}
+.modal .form-group textarea{resize:vertical;min-height:80px}
+.modal-order-summary{background:var(--cream);padding:1.2rem;margin-bottom:1.5rem;font-size:.85rem}
+.modal-order-line{display:flex;justify-content:space-between;padding:.3rem 0;color:var(--deep-soft)}
+.modal-order-total{display:flex;justify-content:space-between;padding-top:.6rem;margin-top:.6rem;border-top:1px solid rgba(58,46,42,.1);font-weight:500;color:var(--deep)}
+.modal-actions{display:flex;gap:1rem;margin-top:1.5rem}
+.btn-modal-back{flex:1;padding:1rem;background:none;border:1px solid rgba(58,46,42,.15);font-family:var(--font-body);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--deep-soft);cursor:pointer;transition:all .3s}
+.btn-modal-back:hover{border-color:var(--deep);color:var(--deep)}
+.btn-modal-submit{flex:2;padding:1rem;background:var(--deep);color:var(--cream);border:none;font-family:var(--font-body);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:background .4s}
+.btn-modal-submit:hover{background:var(--deep-soft)}
+.btn-modal-submit:disabled{opacity:.5;cursor:not-allowed}
+
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(212,165,154,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(201,169,110,.08) 0%,transparent 50%);pointer-events:none}
+.hero-content{display:flex;flex-direction:column;justify-content:center;padding:8rem 3rem 4rem 6rem;position:relative;z-index:2}
+.hero-tagline{font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:2rem;opacity:0;animation:fadeIn 1s .8s forwards}
+.hero-title{font-family:var(--font-display);font-size:clamp(3rem,5.5vw,5.5rem);font-weight:300;line-height:1.1;margin-bottom:2rem;opacity:0;animation:fadeIn 1s 1s forwards}
+.hero-title em{font-style:italic;color:var(--rose)}
+.hero-desc{font-size:1rem;line-height:1.8;color:var(--deep-soft);max-width:420px;margin-bottom:3rem;opacity:0;animation:fadeIn 1s 1.2s forwards}
+.hero-cta{display:inline-flex;align-items:center;gap:1rem;text-decoration:none;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--deep);opacity:0;animation:fadeIn 1s 1.4s forwards;transition:gap .3s}
+.hero-cta:hover{gap:1.5rem}
+.hero-cta .arrow{width:48px;height:1px;background:var(--blush);position:relative;transition:width .3s}
+.hero-cta:hover .arrow{width:64px}
+.hero-cta .arrow::after{content:'';position:absolute;right:0;top:-3px;width:8px;height:8px;border-right:1px solid var(--blush);border-top:1px solid var(--blush);transform:rotate(45deg)}
+.hero-visual{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hero-img-wrapper{width:85%;height:75%;position:relative;opacity:0;animation:fadeIn 1.2s .6s forwards}
+.hero-img-wrapper img{width:100%;height:100%;object-fit:cover;border-radius:0 0 0 40%}
+.hero-float-badge{position:absolute;bottom:12%;left:-8%;background:var(--warm-white);padding:1.5rem 2rem;box-shadow:0 20px 60px rgba(58,46,42,.1);border-radius:2px;opacity:0;animation:floatIn 1s 1.6s forwards}
+.hero-float-badge .number{font-family:var(--font-display);font-size:2.2rem;font-weight:300;color:var(--rose)}
+.hero-float-badge .label{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe);margin-top:.25rem}
+@keyframes fadeIn{to{opacity:1}}
+@keyframes floatIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+.marquee-section{padding:3rem 0;overflow:hidden;border-top:1px solid rgba(58,46,42,.06);border-bottom:1px solid rgba(58,46,42,.06);background:var(--cream)}
+.marquee-track{display:flex;animation:marquee 25s linear infinite;width:max-content}
+.marquee-item{font-family:var(--font-display);font-size:1.1rem;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--taupe);white-space:nowrap;padding:0 3rem;display:flex;align-items:center;gap:3rem}
+.marquee-item::after{content:'✦';font-size:.6rem;color:var(--blush-light)}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.section-label{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--blush);margin-bottom:1.5rem}
+.section-title{font-family:var(--font-display);font-size:clamp(2.2rem,4vw,3.5rem);font-weight:300;line-height:1.2;margin-bottom:1.5rem}
+
+.about{padding:8rem 6rem;display:grid;grid-template-columns:1fr 1.2fr;gap:6rem;align-items:center}
+.about-img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:0 30% 0 0}
+.about-text p{font-size:1rem;line-height:1.9;color:var(--deep-soft);margin-bottom:2rem}
+.about-stats{display:flex;gap:3rem;margin-top:3rem;padding-top:2rem;border-top:1px solid rgba(58,46,42,.1)}
+.stat-num{font-family:var(--font-display);font-size:2.5rem;font-weight:300;color:var(--rose)}
+.stat-label{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--taupe);margin-top:.25rem}
+
+.products{padding:6rem 6rem 8rem;background:var(--cream);position:relative}
+.products::before{content:'';position:absolute;top:0;right:0;width:40%;height:40%;background:radial-gradient(ellipse,rgba(201,169,110,.08) 0%,transparent 70%);pointer-events:none}
+.products-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4rem}
+.products-header p{max-width:400px;font-size:.95rem;line-height:1.7;color:var(--taupe)}
+.products-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+.product-card{position:relative}
+.product-img-wrap{position:relative;overflow:hidden;aspect-ratio:3/4;background:var(--warm-white);margin-bottom:1.5rem}
+.product-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.25,.46,.45,.94)}
+.product-card:hover .product-img-wrap img{transform:scale(1.06)}
+.product-badge{position:absolute;top:1rem;left:1rem;background:var(--sage);color:#fff;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;padding:.4rem .8rem}
+.product-add-btn{position:absolute;bottom:0;left:0;right:0;background:rgba(58,46,42,.92);color:#fff;text-align:center;padding:1rem;font-family:var(--font-body);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;transform:translateY(100%);transition:transform .4s;border:none;cursor:pointer;width:100%}
+.product-card:hover .product-add-btn{transform:translateY(0)}
+.product-add-btn:hover{background:rgba(58,46,42,1)}
+.product-category{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe);margin-bottom:.4rem}
+.product-name{font-family:var(--font-display);font-size:1.25rem;font-weight:400;margin-bottom:.5rem}
+.product-price{font-size:.95rem;color:var(--rose);font-weight:500}
+.added-pulse{animation:addedP .6s ease}
+@keyframes addedP{0%{transform:translateY(0)}30%{transform:translateY(-3px);background:var(--sage)}100%{transform:translateY(0)}}
+
+.values{padding:8rem 6rem;text-align:center}
+.values .section-title{max-width:600px;margin:0 auto 4rem}
+.values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3rem;max-width:1100px;margin:0 auto}
+.value-card{padding:3rem 2rem;border:1px solid rgba(58,46,42,.08);transition:border-color .4s,box-shadow .4s;position:relative;overflow:hidden}
+.value-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blush),var(--gold-light));transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.value-card:hover::before{transform:scaleX(1)}
+.value-card:hover{border-color:rgba(58,46,42,.15);box-shadow:0 20px 60px rgba(58,46,42,.06)}
+.value-icon{font-size:2rem;margin-bottom:1.5rem}
+.value-title{font-family:var(--font-display);font-size:1.4rem;font-weight:400;margin-bottom:1rem}
+.value-desc{font-size:.9rem;line-height:1.8;color:var(--deep-soft)}
+
+.banner{display:grid;grid-template-columns:1.2fr 1fr;min-height:500px;overflow:hidden}
+.banner-img{width:100%;height:100%;object-fit:cover}
+.banner-content{background:var(--deep);color:var(--cream);display:flex;flex-direction:column;justify-content:center;padding:4rem 5rem}
+.banner-content .section-label{color:var(--gold-light)}
+.banner-content .section-title{color:var(--cream);margin-bottom:1.5rem}
+.banner-content p{color:var(--taupe);line-height:1.8;margin-bottom:2.5rem}
+.btn-gold{display:inline-flex;align-items:center;gap:.75rem;padding:1rem 2.5rem;border:1px solid var(--gold);color:var(--gold);text-decoration:none;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;transition:all .4s}
+.btn-gold:hover{background:var(--gold);color:var(--deep)}
+
+.reviews{padding:8rem 6rem;background:var(--cream)}
+.reviews-header{text-align:center;margin-bottom:4rem}
+.reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem;max-width:1100px;margin:0 auto}
+.review-card{background:var(--warm-white);padding:2.5rem}
+.review-stars{color:var(--gold);font-size:.85rem;letter-spacing:3px;margin-bottom:1.5rem}
+.review-text{font-family:var(--font-display);font-size:1.15rem;font-weight:400;font-style:italic;line-height:1.7;margin-bottom:1.5rem;color:var(--deep-soft)}
+.review-author{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe)}
+
+.contact{padding:8rem 6rem;display:grid;grid-template-columns:1fr 1.4fr;gap:6rem}
+.contact-info h2{font-family:var(--font-display);font-size:clamp(2rem,3.5vw,3rem);font-weight:300;line-height:1.2;margin-bottom:2rem}
+.contact-info>p{color:var(--deep-soft);line-height:1.8;margin-bottom:3rem}
+.contact-details{display:flex;flex-direction:column;gap:1.5rem}
+.contact-detail{display:flex;align-items:flex-start;gap:1rem}
+.contact-detail-icon{width:40px;height:40px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.contact-detail-label{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe);margin-bottom:.25rem}
+.contact-detail-value{font-size:.95rem;color:var(--deep)}
+.contact-socials{display:flex;gap:1rem;margin-top:2.5rem}
+.social-link{width:44px;height:44px;border:1px solid rgba(58,46,42,.15);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--deep-soft);font-size:.85rem;transition:all .3s}
+.social-link:hover{background:var(--deep);color:var(--cream);border-color:var(--deep)}
+.contact-form-wrap{background:var(--cream);padding:3.5rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.form-group{margin-bottom:1.5rem}
+.form-group label{display:block;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--taupe);margin-bottom:.75rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:1rem 1.25rem;border:1px solid rgba(58,46,42,.12);background:var(--warm-white);font-family:var(--font-body);font-size:.95rem;color:var(--deep);outline:none;transition:border-color .3s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blush)}
+.form-group textarea{resize:vertical;min-height:140px}
+.form-group select{cursor:pointer}
+.btn-submit{width:100%;padding:1.2rem;background:var(--deep);color:var(--cream);border:none;font-family:var(--font-body);font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:background .4s;position:relative;overflow:hidden}
+.btn-submit:hover{background:var(--deep-soft)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.form-note{font-size:.78rem;color:var(--taupe);margin-top:1rem;text-align:center}
+
+footer{background:var(--deep);color:var(--cream);padding:5rem 6rem 2rem}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:4rem}
+.footer-brand-name{font-family:var(--font-display);font-size:1.6rem;font-weight:300;letter-spacing:.25em;margin-bottom:1.5rem}
+.footer-brand-desc{font-size:.9rem;line-height:1.8;color:var(--taupe);max-width:320px}
+.footer-col-title{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-light);margin-bottom:1.5rem}
+.footer-links{list-style:none}
+.footer-links li{margin-bottom:.75rem}
+.footer-links a{text-decoration:none;color:var(--taupe);font-size:.9rem;transition:color .3s}
+.footer-links a:hover{color:var(--cream)}
+.footer-bottom{border-top:1px solid rgba(168,152,144,.15);padding-top:2rem;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--taupe)}
+
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s,transform .8s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--deep);color:var(--cream);padding:1.2rem 2rem;font-size:.85rem;letter-spacing:.05em;box-shadow:0 10px 40px rgba(0,0,0,.15);z-index:9999;transform:translateY(120%);transition:transform .5s cubic-bezier(.34,1.56,.64,1);border-radius:2px}
+.toast.show{transform:translateY(0)}.toast.success{background:var(--sage);color:#fff}.toast.error{background:var(--red);color:#fff}
+
+@media(max-width:1024px){
+nav{padding:1.2rem 2rem}.hero{grid-template-columns:1fr;min-height:auto}.hero-content{padding:8rem 2rem 3rem}.hero-visual{height:60vh}.hero-img-wrapper{width:100%;height:100%}.hero-img-wrapper img{border-radius:0}.hero-float-badge{left:5%;bottom:8%}.about{grid-template-columns:1fr;padding:4rem 2rem;gap:3rem}.products{padding:4rem 2rem}.products-grid{grid-template-columns:repeat(2,1fr)}.products-header{flex-direction:column;gap:1rem;align-items:flex-start}.values{padding:4rem 2rem}.values-grid{grid-template-columns:1fr}.banner{grid-template-columns:1fr}.banner-content{padding:3rem 2rem}.reviews{padding:4rem 2rem}.reviews-grid{grid-template-columns:1fr}.contact{grid-template-columns:1fr;padding:4rem 2rem;gap:3rem}.contact-form-wrap{padding:2rem}.footer-grid{grid-template-columns:1fr 1fr}footer{padding:3rem 2rem 1.5rem}.footer-bottom{flex-direction:column;gap:.5rem;text-align:center}
+}
+@media(max-width:768px){
+.nav-center{display:none}.hamburger{display:flex}.nav-center.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:var(--warm-white);padding:2rem 3rem;box-shadow:0 10px 30px rgba(0,0,0,.06)}.products-grid{grid-template-columns:1fr}.form-row,.modal .form-row{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.modal{padding:2rem}.modal-actions{flex-direction:column}.product-add-btn{transform:translateY(0)}
+}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="loader-text" id="loaderText"></div></div>
+
+<nav id="navbar">
+  <a href="#" class="nav-logo">VELOUR</a>
+  <ul class="nav-center" id="navLinks">
+    <li><a href="#about">О бренде</a></li>
+    <li><a href="#products">Продукты</a></li>
+    <li><a href="#values">Философия</a></li>
+    <li><a href="#reviews">Отзывы</a></li>
+    <li><a href="#contact">Связаться</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-toggle" id="cartToggle" aria-label="Корзина">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+    <button class="hamburger" id="hamburger" aria-label="Меню"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h3 class="cart-drawer-title">Корзина</h3>
+    <button class="cart-close" id="cartClose">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty" id="cartEmpty"><div class="cart-empty-icon">🛍</div><p>Ваша корзина пуста.<br>Добавьте товары из каталога.</p></div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row"><span class="cart-total-label">Итого</span><span class="cart-total-value" id="cartTotal">₸ 0</span></div>
+    <button class="btn-checkout" id="btnCheckout">Оформить заказ</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <h3 class="modal-title">Оформление заказа</h3>
+    <p class="modal-subtitle">Заполните контактные данные — мы свяжемся для подтверждения.</p>
+    <div class="modal-order-summary" id="orderSummary"></div>
+    <form id="checkoutForm">
+      <div class="form-row">
+        <div class="form-group"><label for="co_name">Имя *</label><input type="text" id="co_name" required placeholder="Ваше имя"></div>
+        <div class="form-group"><label for="co_phone">Телефон *</label><input type="tel" id="co_phone" required placeholder="+7 (___) ___-__-__"></div>
+      </div>
+      <div class="form-group"><label for="co_city">Город</label><input type="text" id="co_city" placeholder="Алматы"></div>
+      <div class="form-group"><label for="co_comment">Комментарий</label><textarea id="co_comment" placeholder="Пожелания по доставке..."></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-back" id="btnModalBack">Назад</button>
+        <button type="submit" class="btn-modal-submit" id="btnModalSubmit">Отправить заказ</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <p class="hero-tagline">Luxury Skincare Collection</p>
+    <h1 class="hero-title">Раскройте<br>свою <em>естественную</em><br>красоту</h1>
+    <p class="hero-desc">Изысканная косметика, созданная с уважением к вашей коже. Натуральные компоненты, научный подход, безупречный результат.</p>
+    <a href="#products" class="hero-cta">Смотреть коллекцию <span class="arrow"></span></a>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-img-wrapper">
+      <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80" alt="VELOUR" />
+    </div>
+    <div class="hero-float-badge"><div class="number">98%</div><div class="label">Довольных клиентов</div></div>
+  </div>
+</section>
+
+<div class="marquee-section">
+  <div class="marquee-track">
+    <span class="marquee-item">Натуральные ингредиенты</span><span class="marquee-item">Cruelty-free</span><span class="marquee-item">Дерматологически протестировано</span><span class="marquee-item">Экологичная упаковка</span><span class="marquee-item">Без парабенов</span><span class="marquee-item">Vegan-friendly</span>
+    <span class="marquee-item">Натуральные ингредиенты</span><span class="marquee-item">Cruelty-free</span><span class="marquee-item">Дерматологически протестировано</span><span class="marquee-item">Экологичная упаковка</span><span class="marquee-item">Без парабенов</span><span class="marquee-item">Vegan-friendly</span>
+  </div>
+</div>
+
+<section class="about" id="about">
+  <img class="about-img reveal" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700&q=80" alt="VELOUR" />
+  <div class="about-text reveal">
+    <p class="section-label">О нас</p>
+    <h2 class="section-title">Где наука встречается с красотой</h2>
+    <p>VELOUR — это больше, чем косметика. Это философия бережного ухода, основанная на силе природных компонентов и подкреплённая современными научными исследованиями.</p>
+    <p>Мы создаём продукты, которые работают в гармонии с вашей кожей, раскрывая её природный потенциал.</p>
+    <div class="about-stats">
+      <div><div class="stat-num">50+</div><div class="stat-label">Продуктов</div></div>
+      <div><div class="stat-num">12K</div><div class="stat-label">Клиентов</div></div>
+      <div><div class="stat-num">4.9</div><div class="stat-label">Рейтинг</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="products" id="products">
+  <div class="products-header reveal">
+    <div><p class="section-label">Коллекция</p><h2 class="section-title">Наши бестселлеры</h2></div>
+    <p>Откройте для себя продукты, которые полюбили тысячи женщин по всему миру.</p>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<section class="values" id="values">
+  <p class="section-label reveal">Философия</p>
+  <h2 class="section-title reveal">Почему выбирают VELOUR</h2>
+  <div class="values-grid">
+    <div class="value-card reveal"><div class="value-icon">🌿</div><h3 class="value-title">100% натурально</h3><p class="value-desc">Только проверенные природные ингредиенты. Никаких синтетических отдушек, парабенов и сульфатов.</p></div>
+    <div class="value-card reveal"><div class="value-icon">🔬</div><h3 class="value-title">Научный подход</h3><p class="value-desc">Каждая формула разработана совместно с дерматологами и прошла клинические испытания.</p></div>
+    <div class="value-card reveal"><div class="value-icon">♻️</div><h3 class="value-title">Эко-упаковка</h3><p class="value-desc">Перерабатываемые материалы и минимальный экологический след. Забота о планете — в нашей ДНК.</p></div>
+  </div>
+</section>
+
+<section class="banner reveal">
+  <img class="banner-img" src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=800&q=80" alt="VELOUR Bestseller" />
+  <div class="banner-content">
+    <p class="section-label">Бестселлер сезона</p>
+    <h2 class="section-title">Velvet Renewal<br>Face Oil</h2>
+    <p>Революционное масло для лица с комплексом из 9 драгоценных масел. Мгновенно питает и дарит коже сияние изнутри.</p>
+    <a href="#products" class="btn-gold">Смотреть коллекцию <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2"/></svg></a>
+  </div>
+</section>
+
+<section class="reviews" id="reviews">
+  <div class="reviews-header reveal"><p class="section-label">Отзывы</p><h2 class="section-title">Что говорят наши клиенты</h2></div>
+  <div class="reviews-grid">
+    <div class="review-card reveal"><div class="review-stars">★★★★★</div><p class="review-text">«Сыворотка с витамином C стала моим must-have. Кожа буквально светится изнутри уже после двух недель.»</p><p class="review-author">Айгерим К. — Алматы</p></div>
+    <div class="review-card reveal"><div class="review-stars">★★★★★</div><p class="review-text">«Обожаю философию бренда. Натуральный состав, красивая упаковка и невероятный результат.»</p><p class="review-author">Дана М. — Астана</p></div>
+    <div class="review-card reveal"><div class="review-stars">★★★★★</div><p class="review-text">«Ночной эликсир — это невероятное средство. Утром кожа мягкая, увлажнённая и отдохнувшая.»</p><p class="review-author">Мадина Т. — Шымкент</p></div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="contact-info reveal">
+    <p class="section-label">Связаться</p>
+    <h2>Остались вопросы?<br>Напишите нам</h2>
+    <p>Мы всегда рады помочь подобрать идеальный уход именно для вас.</p>
+    <div class="contact-details">
+      <div class="contact-detail"><div class="contact-detail-icon">📍</div><div><div class="contact-detail-label">Адрес</div><div class="contact-detail-value">Алматы, ул. Абая 150</div></div></div>
+      <div class="contact-detail"><div class="contact-detail-icon">📞</div><div><div class="contact-detail-label">Телефон</div><div class="contact-detail-value">+7 (777) 123-45-67</div></div></div>
+      <div class="contact-detail"><div class="contact-detail-icon">✉️</div><div><div class="contact-detail-label">Email</div><div class="contact-detail-value">hello@velour.kz</div></div></div>
+    </div>
+    <div class="contact-socials"><a href="#" class="social-link">IG</a><a href="#" class="social-link">TG</a><a href="#" class="social-link">WA</a></div>
+  </div>
+  <div class="contact-form-wrap reveal">
+    <form id="contactForm">
+      <div class="form-row">
+        <div class="form-group"><label for="cf_name">Имя *</label><input type="text" id="cf_name" required placeholder="Ваше имя"></div>
+        <div class="form-group"><label for="cf_phone">Телефон *</label><input type="tel" id="cf_phone" required placeholder="+7 (___) ___-__-__"></div>
+      </div>
+      <div class="form-group"><label for="cf_email">Email</label><input type="email" id="cf_email" placeholder="email@example.com"></div>
+      <div class="form-group"><label for="cf_topic">Тема обращения</label><select id="cf_topic"><option value="general">Общий вопрос</option><option value="consultation">Консультация по уходу</option><option value="order">Вопрос по заказу</option><option value="collab">Сотрудничество</option></select></div>
+      <div class="form-group"><label for="cf_message">Сообщение *</label><textarea id="cf_message" required placeholder="Расскажите, чем мы можем помочь..."></textarea></div>
+      <button type="submit" class="btn-submit" id="btnContact">Отправить сообщение</button>
+      <p class="form-note">Мы ответим в течение 24 часов</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div><div class="footer-brand-name">VELOUR</div><p class="footer-brand-desc">Изысканная косметика, созданная с уважением к вашей коже и к нашей планете.</p></div>
+    <div><div class="footer-col-title">Каталог</div><ul class="footer-links"><li><a href="#">Сыворотки</a></li><li><a href="#">Увлажнение</a></li><li><a href="#">Тонеры</a></li><li><a href="#">Масла</a></li></ul></div>
+    <div><div class="footer-col-title">Компания</div><ul class="footer-links"><li><a href="#about">О бренде</a></li><li><a href="#values">Философия</a></li><li><a href="#contact">Контакты</a></li></ul></div>
+    <div><div class="footer-col-title">Помощь</div><ul class="footer-links"><li><a href="#">Доставка</a></li><li><a href="#">Возврат</a></li><li><a href="#">FAQ</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><span>© 2026 VELOUR. Все права защищены.</span><span>Сделано с ♡</span></div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PRODUCTS=[
+  {id:1,name:'Glow Serum Vitamin C',category:'Сыворотки',price:18900,badge:'Новинка',img:'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=500&q=80'},
+  {id:2,name:'Hydra Velvet Cream',category:'Увлажнение',price:14500,badge:null,img:'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500&q=80'},
+  {id:3,name:'Rose Petal Mist',category:'Тонеры',price:9800,badge:'Хит',img:'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&q=80'},
+  {id:4,name:'Night Repair Elixir',category:'Ночной уход',price:22400,badge:null,img:'https://images.unsplash.com/photo-1570194065650-d99fb4d8a609?w=500&q=80'},
+];
+let cart=[];
+const fmt=n=>'₸ '+n.toLocaleString('ru-RU');
+
+// Loader
+!function(){const t='VELOUR',el=document.getElementById('loaderText');[...t].forEach((c,i)=>{const s=document.createElement('span');s.textContent=c;s.style.animationDelay=i*.08+'s';el.appendChild(s)});setTimeout(()=>document.getElementById('loader').classList.add('hidden'),1800)}();
+
+// Nav
+window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',scrollY>60));
+document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
+document.querySelectorAll('.nav-center a').forEach(a=>a.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('open')));
+
+// Products
+!function(){const g=document.getElementById('productsGrid');PRODUCTS.forEach(p=>{g.innerHTML+=`
+<div class="product-card reveal">
+  <div class="product-img-wrap">
+    <img src="${p.img}" alt="${p.name}"/>
+    ${p.badge?`<div class="product-badge">${p.badge}</div>`:''}
+    <button class="product-add-btn" data-id="${p.id}">Добавить в корзину</button>
+  </div>
+  <p class="product-category">${p.category}</p>
+  <h3 class="product-name">${p.name}</h3>
+  <p class="product-price">${fmt(p.price)}</p>
+</div>`})}();
+
+// Cart
+function addToCart(id){const p=PRODUCTS.find(x=>x.id===id);if(!p)return;const e=cart.find(x=>x.id===id);e?e.qty++:cart.push({...p,qty:1});updateCart();showToast(p.name+' добавлен','success')}
+function removeFromCart(id){cart=cart.filter(x=>x.id!==id);updateCart()}
+function changeQty(id,d){const i=cart.find(x=>x.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)return removeFromCart(id);updateCart()}
+function cartSum(){return cart.reduce((s,i)=>s+i.price*i.qty,0)}
+function updateCart(){
+  const b=document.getElementById('cartBadge'),cnt=cart.reduce((s,i)=>s+i.qty,0);
+  b.textContent=cnt;b.classList.toggle('show',cnt>0);
+  const ci=document.getElementById('cartItems'),ce=document.getElementById('cartEmpty'),cf=document.getElementById('cartFooter');
+  if(!cart.length){ci.innerHTML='';ci.appendChild(ce);ce.style.display='';cf.style.display='none';return}
+  ce.style.display='none';cf.style.display='';
+  document.getElementById('cartTotal').textContent=fmt(cartSum());
+  ci.innerHTML=cart.map(i=>`<div class="cart-item">
+    <img class="cart-item-img" src="${i.img}" alt="${i.name}"/>
+    <div class="cart-item-info"><div><div class="cart-item-name">${i.name}</div><div class="cart-item-cat">${i.category}</div></div>
+    <div class="cart-item-bottom"><div class="qty-controls"><button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button><span class="qty-val">${i.qty}</span><button class="qty-btn" onclick="changeQty(${i.id},1)">+</button></div><span class="cart-item-price">${fmt(i.price*i.qty)}</span></div>
+    <button class="cart-item-remove" onclick="removeFromCart(${i.id})">Удалить</button></div></div>`).join('')}
+
+function openCart(){document.getElementById('cartOverlay').classList.add('open');document.getElementById('cartDrawer').classList.add('open');document.body.style.overflow='hidden'}
+function closeCart(){document.getElementById('cartOverlay').classList.remove('open');document.getElementById('cartDrawer').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('cartToggle').addEventListener('click',openCart);
+document.getElementById('cartClose').addEventListener('click',closeCart);
+document.getElementById('cartOverlay').addEventListener('click',closeCart);
+
+document.addEventListener('click',e=>{if(e.target.classList.contains('product-add-btn')){addToCart(+e.target.dataset.id);e.target.classList.add('added-pulse');e.target.textContent='✓ Добавлено';setTimeout(()=>{e.target.classList.remove('added-pulse');e.target.textContent='Добавить в корзину'},1200)}});
+
+// Checkout
+function openCheckout(){closeCart();setTimeout(()=>{const s=document.getElementById('orderSummary');s.innerHTML=cart.map(i=>`<div class="modal-order-line"><span>${i.name} × ${i.qty}</span><span>${fmt(i.price*i.qty)}</span></div>`).join('')+`<div class="modal-order-total"><span>Итого</span><span>${fmt(cartSum())}</span></div>`;document.getElementById('checkoutModal').classList.add('open');document.body.style.overflow='hidden'},300)}
+function closeCheckout(){document.getElementById('checkoutModal').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('btnCheckout').addEventListener('click',openCheckout);
+document.getElementById('btnModalBack').addEventListener('click',()=>{closeCheckout();setTimeout(openCart,300)});
+document.getElementById('checkoutModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCheckout()});
+
+// Submit order
+document.getElementById('checkoutForm').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=document.getElementById('btnModalSubmit');btn.disabled=true;btn.textContent='Отправка...';
+  const data={type:'order',name:document.getElementById('co_name').value,phone:document.getElementById('co_phone').value,city:document.getElementById('co_city').value,comment:document.getElementById('co_comment').value,items:cart.map(i=>({name:i.name,qty:i.qty,price:i.price})),total:cartSum()};
+  try{const r=await fetch('/.netlify/functions/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw 0;closeCheckout();cart=[];updateCart();document.getElementById('checkoutForm').reset();showToast('Заказ отправлен! Мы скоро свяжемся 🎉','success')}
+  catch{showToast('Ошибка отправки. Попробуйте позже.','error')}
+  finally{btn.disabled=false;btn.textContent='Отправить заказ'}});
+
+// Submit contact
+document.getElementById('contactForm').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=document.getElementById('btnContact');btn.disabled=true;btn.textContent='Отправка...';
+  const data={type:'contact',name:document.getElementById('cf_name').value,phone:document.getElementById('cf_phone').value,email:document.getElementById('cf_email').value,topic:document.getElementById('cf_topic').value,message:document.getElementById('cf_message').value};
+  try{const r=await fetch('/.netlify/functions/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok)throw 0;document.getElementById('contactForm').reset();showToast('Сообщение отправлено! Ждите ответа 💌','success')}
+  catch{showToast('Ошибка отправки. Попробуйте позже.','error')}
+  finally{btn.disabled=false;btn.textContent='Отправить сообщение'}});
+
+function showToast(m,t=''){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t;requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>el.classList.remove('show'),3500)}
+
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')}),{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
